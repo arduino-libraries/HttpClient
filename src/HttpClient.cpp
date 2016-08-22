@@ -132,7 +132,10 @@ int HttpClient::startRequest(const char* aURLPath, const char* aHttpMethod,
 
         if (hasBody)
         {
-                write(aBody, aContentLength);
+            for (int i = 0; i < aContentLength; i += 1024)
+            {
+                write(aBody + i, min(aContentLength - i, 1024));
+            }
         }
     }
 
