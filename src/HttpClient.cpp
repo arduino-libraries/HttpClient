@@ -32,8 +32,8 @@ void HttpClient::resetState()
 {
   iState = eIdle;
   iStatusCode = 0;
-  iContentLength = 0;
   iBodyLengthConsumed = 0;
+  iContentLength = kNoContentLengthHeader;
   iContentLengthPtr = kContentLengthPrefix;
   iHttpResponseTimeout = kHttpResponseTimeout;
 }
