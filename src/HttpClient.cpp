@@ -59,7 +59,7 @@ void HttpClient::beginRequest()
   iState = eRequestStarted;
 }
 
-int HttpClient::startRequest(const char* aURLPath, const char* aHttpMethod, 
+int HttpClient::startRequest(const char* aURLPath, const char* aHttpMethod,
                                 const char* aContentType, int aContentLength, const byte aBody[])
 {
     if (iState == eReadingBody)
@@ -96,7 +96,7 @@ int HttpClient::startRequest(const char* aURLPath, const char* aHttpMethod,
                 Serial.println("Connection failed");
 #endif
                 return HTTP_ERROR_CONNECTION_FAILED;
-            }    
+            }
         }
     }
     else
@@ -385,7 +385,7 @@ int HttpClient::responseStatusCode()
         const char* statusPrefix = "HTTP/*.* ";
         const char* statusPtr = statusPrefix;
         // Whilst we haven't timed out & haven't reached the end of the headers
-        while ((c != '\n') && 
+        while ((c != '\n') &&
                ( (millis() - timeoutStart) < iHttpResponseTimeout ))
         {
             if (available())
@@ -478,7 +478,7 @@ int HttpClient::skipResponseHeaders()
     // Just keep reading until we finish reading the headers or time out
     unsigned long timeoutStart = millis();
     // Whilst we haven't timed out & haven't reached the end of the headers
-    while ((!endOfHeadersReached()) && 
+    while ((!endOfHeadersReached()) &&
            ( (millis() - timeoutStart) < iHttpResponseTimeout ))
     {
         if (available())
@@ -508,7 +508,7 @@ int HttpClient::skipResponseHeaders()
 
 int HttpClient::contentLength()
 {
-    // skip the response headers, if they haven't been read already 
+    // skip the response headers, if they haven't been read already
     if (!endOfHeadersReached())
     {
         skipResponseHeaders();
@@ -684,7 +684,7 @@ bool HttpClient::headerAvailable()
             {
                 // end of the line, all done
                 break;
-            } 
+            }
             else
             {
                 // ignore any CR or LF characters
