@@ -514,19 +514,127 @@ int HttpClient::contentLength()
     return iContentLength;
 }
 
+int HttpClient::hexToDec(char c)
+{
+    if (c >= '0' && c <= '9')
+    {
+        return c - '0';
+    }
+
+    if (c >= 'A' && c <= 'F')
+    {
+        return c - 'A' + 10;
+    }
+
+    if (c >= 'a' && c <= 'f')
+    {
+        return c - 'a' + 10;
+    }
+
+    return -1;
+}
+
 String HttpClient::responseBody()
 {
     int bodyLength = contentLength();
     String response;
 
-    if (bodyLength > 0)
+    int skipBytes = 0;
+    int chunkSize;
+
+    enum {
+        CHUNK_READER_HEADER,
+        CHUNK_READER_CONTENT,
+        CHUNK_READER_TRAIL_LF,
+    } state;
+
+    unsigned long timeoutStart = millis();
+
+    if (bodyLength == kNoContentLengthHeader)
     {
-        response.reserve(bodyLength);
+      // If we didn't get the Content-Length header, assume the server is
+      // sending in chunked encoding.
+      //
+      // See https://en.wikipedia.org/wiki/Chunked_transfer_encoding
+
+      chunkSize = 0;
+      state = CHUNK_READER_HEADER;
+    }
+    else
+    {
+      chunkSize = bodyLength;
+      response.reserve(chunkSize);
+      state = CHUNK_READER_CONTENT;
     }
 
-    while (available())
+    while ((millis() - timeoutStart) < kHttpWaitForDataDelay)
     {
-        response += (char)read();
+        // For Content-Length based transmission, stop reading after the
+        // first chunk is completed
+        if (bodyLength != kNoContentLengthHeader && chunkSize == 0)
+        {
+            break;
+        }
+
+        // In chunked encoding, we don't know how much data we can expect.
+        // The transfer ends when the connection is closed.
+        if (!connected())
+        {
+            break;
+        }
+
+        // Transfers are subject to timing delays, so let's wait a bit if no data is
+        // currently available.
+        if (!available())
+        {
+            delay(1);
+            continue;
+        }
+
+        char c = (char)read();
+
+        switch (state)
+        {
+            case CHUNK_READER_HEADER: {
+                int v = hexToDec(c);
+
+                if (v >= 0)
+                {
+                    chunkSize <<= 4;
+                    chunkSize += hexToDec(c);
+                }
+
+                if (c == '\n')
+                {
+                    response.reserve(response.length() + chunkSize);
+                    state = CHUNK_READER_CONTENT;
+                }
+
+                break;
+            }
+
+            case CHUNK_READER_CONTENT:
+                if (chunkSize--)
+                {
+                    response += c;
+                }
+                else
+                {
+                    skipBytes = 2;
+                    state = CHUNK_READER_TRAIL_LF;
+                }
+
+                break;
+
+            case CHUNK_READER_TRAIL_LF:
+                if (skipBytes-- == 0)
+                {
+                    chunkSize = 0;
+                    state = CHUNK_READER_HEADER;
+                }
+
+                break;
+        }
     }
 
     return response;
