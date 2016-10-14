@@ -32,8 +32,8 @@ void HttpClient::resetState()
 {
   iState = eIdle;
   iStatusCode = 0;
-  iContentLength = 0;
   iBodyLengthConsumed = 0;
+  iContentLength = kNoContentLengthHeader;
   iContentLengthPtr = kContentLengthPrefix;
   iHttpResponseTimeout = kHttpResponseTimeout;
 }
@@ -59,7 +59,7 @@ void HttpClient::beginRequest()
   iState = eRequestStarted;
 }
 
-int HttpClient::startRequest(const char* aURLPath, const char* aHttpMethod, 
+int HttpClient::startRequest(const char* aURLPath, const char* aHttpMethod,
                                 const char* aContentType, int aContentLength, const byte aBody[])
 {
     if (iState == eReadingBody)
@@ -96,7 +96,7 @@ int HttpClient::startRequest(const char* aURLPath, const char* aHttpMethod,
                 Serial.println("Connection failed");
 #endif
                 return HTTP_ERROR_CONNECTION_FAILED;
-            }    
+            }
         }
     }
     else
@@ -132,7 +132,10 @@ int HttpClient::startRequest(const char* aURLPath, const char* aHttpMethod,
 
         if (hasBody)
         {
-                write(aBody, aContentLength);
+            for (int i = 0; i < aContentLength; i += 1024)
+            {
+                write(aBody + i, min(aContentLength - i, 1024));
+            }
         }
     }
 
@@ -382,7 +385,7 @@ int HttpClient::responseStatusCode()
         const char* statusPrefix = "HTTP/*.* ";
         const char* statusPtr = statusPrefix;
         // Whilst we haven't timed out & haven't reached the end of the headers
-        while ((c != '\n') && 
+        while ((c != '\n') &&
                ( (millis() - timeoutStart) < iHttpResponseTimeout ))
         {
             if (available())
@@ -475,7 +478,7 @@ int HttpClient::skipResponseHeaders()
     // Just keep reading until we finish reading the headers or time out
     unsigned long timeoutStart = millis();
     // Whilst we haven't timed out & haven't reached the end of the headers
-    while ((!endOfHeadersReached()) && 
+    while ((!endOfHeadersReached()) &&
            ( (millis() - timeoutStart) < iHttpResponseTimeout ))
     {
         if (available())
@@ -505,7 +508,7 @@ int HttpClient::skipResponseHeaders()
 
 int HttpClient::contentLength()
 {
-    // skip the response headers, if they haven't been read already 
+    // skip the response headers, if they haven't been read already
     if (!endOfHeadersReached())
     {
         skipResponseHeaders();
@@ -514,19 +517,127 @@ int HttpClient::contentLength()
     return iContentLength;
 }
 
+int HttpClient::hexToDec(char c)
+{
+    if (c >= '0' && c <= '9')
+    {
+        return c - '0';
+    }
+
+    if (c >= 'A' && c <= 'F')
+    {
+        return c - 'A' + 10;
+    }
+
+    if (c >= 'a' && c <= 'f')
+    {
+        return c - 'a' + 10;
+    }
+
+    return -1;
+}
+
 String HttpClient::responseBody()
 {
     int bodyLength = contentLength();
     String response;
 
-    if (bodyLength > 0)
+    int skipBytes = 0;
+    int chunkSize;
+
+    enum {
+        CHUNK_READER_HEADER,
+        CHUNK_READER_CONTENT,
+        CHUNK_READER_TRAIL_LF,
+    } state;
+
+    unsigned long timeoutStart = millis();
+
+    if (bodyLength == kNoContentLengthHeader)
     {
-        response.reserve(bodyLength);
+      // If we didn't get the Content-Length header, assume the server is
+      // sending in chunked encoding.
+      //
+      // See https://en.wikipedia.org/wiki/Chunked_transfer_encoding
+
+      chunkSize = 0;
+      state = CHUNK_READER_HEADER;
+    }
+    else
+    {
+      chunkSize = bodyLength;
+      response.reserve(chunkSize);
+      state = CHUNK_READER_CONTENT;
     }
 
-    while (available())
+    while ((millis() - timeoutStart) < kHttpWaitForDataDelay)
     {
-        response += (char)read();
+        // For Content-Length based transmission, stop reading after the
+        // first chunk is completed
+        if (bodyLength != kNoContentLengthHeader && chunkSize == 0)
+        {
+            break;
+        }
+
+        // In chunked encoding, we don't know how much data we can expect.
+        // The transfer ends when the connection is closed.
+        if (!connected())
+        {
+            break;
+        }
+
+        // Transfers are subject to timing delays, so let's wait a bit if no data is
+        // currently available.
+        if (!available())
+        {
+            delay(1);
+            continue;
+        }
+
+        char c = (char)read();
+
+        switch (state)
+        {
+            case CHUNK_READER_HEADER: {
+                int v = hexToDec(c);
+
+                if (v >= 0)
+                {
+                    chunkSize <<= 4;
+                    chunkSize += hexToDec(c);
+                }
+
+                if (c == '\n')
+                {
+                    response.reserve(response.length() + chunkSize);
+                    state = CHUNK_READER_CONTENT;
+                }
+
+                break;
+            }
+
+            case CHUNK_READER_CONTENT:
+                if (chunkSize--)
+                {
+                    response += c;
+                }
+                else
+                {
+                    skipBytes = 2;
+                    state = CHUNK_READER_TRAIL_LF;
+                }
+
+                break;
+
+            case CHUNK_READER_TRAIL_LF:
+                if (skipBytes-- == 0)
+                {
+                    chunkSize = 0;
+                    state = CHUNK_READER_HEADER;
+                }
+
+                break;
+        }
     }
 
     return response;
@@ -573,7 +684,7 @@ bool HttpClient::headerAvailable()
             {
                 // end of the line, all done
                 break;
-            } 
+            }
             else
             {
                 // ignore any CR or LF characters

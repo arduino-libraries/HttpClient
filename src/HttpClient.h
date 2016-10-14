@@ -305,6 +305,10 @@ protected:
     */
     void flushClientRx();
 
+    /** Helper function to convert a hex nibble to an interger value
+    */
+    int hexToDec(char c);
+
     // Number of milliseconds that we wait each time there isn't any data
     // available to be read (during status code and header processing)
     static const int kHttpWaitForDataDelay = 1000;
