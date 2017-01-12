@@ -1,6 +1,6 @@
 /*
   Custom request header example for the ArduinoHttpClient
-  library. This example sends a GET request with a custom header every 5 seconds.
+  library. This example sends a GET and a POST request with a custom header every 5 seconds.
 
   note: WiFi SSID and password are stored in config.h file.
   If it is not present, add a new tab, call it "config.h"
