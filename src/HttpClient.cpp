@@ -127,16 +127,11 @@ int HttpClient::startRequest(const char* aURLPath, const char* aHttpMethod,
 
         bool hasBody = (aBody && aContentLength > 0);
 
-        if (initialState == eIdle || hasBody)
+        if (hasBody)
         {
             // This was a simple version of the API, so terminate the headers now
             finishHeaders();
-        }
-        // else we'll call it in endRequest or in the first call to print, etc.
-
-        if (hasBody)
-        {
-                write(aBody, aContentLength);
+            write(aBody, aContentLength);
         }
     }
 
@@ -283,7 +278,11 @@ void HttpClient::beginBody()
 
 int HttpClient::get(const char* aURLPath)
 {
-    return startRequest(aURLPath, HTTP_METHOD_GET);
+    int ret = startRequest(aURLPath, HTTP_METHOD_GET);
+    if (HTTP_SUCCESS == ret) {
+      endRequest();
+    }
+    return ret;
 }
 
 int HttpClient::get(const String& aURLPath)
@@ -293,7 +292,13 @@ int HttpClient::get(const String& aURLPath)
 
 int HttpClient::post(const char* aURLPath)
 {
-    return startRequest(aURLPath, HTTP_METHOD_POST);
+    int ret = startRequest(aURLPath, HTTP_METHOD_POST);
+
+    if (HTTP_SUCCESS == ret) {
+      endRequest();
+    }
+
+    return ret;
 }
 
 int HttpClient::post(const String& aURLPath)
@@ -313,12 +318,24 @@ int HttpClient::post(const String& aURLPath, const String& aContentType, const S
 
 int HttpClient::post(const char* aURLPath, const char* aContentType, int aContentLength, const byte aBody[])
 {
-    return startRequest(aURLPath, HTTP_METHOD_POST, aContentType, aContentLength, aBody);
+    int ret = startRequest(aURLPath, HTTP_METHOD_POST, aContentType, aContentLength, aBody);
+
+    if (HTTP_SUCCESS == ret) {
+      endRequest();
+    }
+
+    return ret;
 }
 
 int HttpClient::put(const char* aURLPath)
 {
-    return startRequest(aURLPath, HTTP_METHOD_PUT);
+    int ret = startRequest(aURLPath, HTTP_METHOD_PUT);
+
+    if (HTTP_SUCCESS == ret) {
+      endRequest();
+    }
+
+    return ret;
 }
 
 int HttpClient::put(const String& aURLPath)
@@ -338,7 +355,13 @@ int HttpClient::put(const String& aURLPath, const String& aContentType, const St
 
 int HttpClient::put(const char* aURLPath, const char* aContentType, int aContentLength, const byte aBody[])
 {
-    return startRequest(aURLPath, HTTP_METHOD_PUT, aContentType, aContentLength, aBody);
+    int ret = startRequest(aURLPath, HTTP_METHOD_PUT, aContentType, aContentLength, aBody);
+
+    if (HTTP_SUCCESS == ret) {
+      endRequest();
+    }
+
+    return ret;
 }
 
 int HttpClient::patch(const char* aURLPath)
@@ -368,7 +391,13 @@ int HttpClient::patch(const char* aURLPath, const char* aContentType, int aConte
 
 int HttpClient::del(const char* aURLPath)
 {
-    return startRequest(aURLPath, HTTP_METHOD_DELETE);
+    int ret = startRequest(aURLPath, HTTP_METHOD_DELETE);
+
+    if (HTTP_SUCCESS == ret) {
+      endRequest();
+    }
+
+    return ret;
 }
 
 int HttpClient::del(const String& aURLPath)
@@ -388,7 +417,13 @@ int HttpClient::del(const String& aURLPath, const String& aContentType, const St
 
 int HttpClient::del(const char* aURLPath, const char* aContentType, int aContentLength, const byte aBody[])
 {
-    return startRequest(aURLPath, HTTP_METHOD_DELETE, aContentType, aContentLength, aBody);
+    int ret = startRequest(aURLPath, HTTP_METHOD_DELETE, aContentType, aContentLength, aBody);
+
+    if (HTTP_SUCCESS == ret) {
+      endRequest();
+    }
+
+    return ret;
 }
 
 int HttpClient::responseStatusCode()
