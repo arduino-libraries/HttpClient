@@ -65,7 +65,7 @@ void loop() {
 
   // read the status code and body of the response
   int statusCode = client.responseStatusCode();
-  String response =  client.responseBody();
+  String response = client.responseBody();
 
   Serial.print("Status code: ");
   Serial.println(statusCode);
