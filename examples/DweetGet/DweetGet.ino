@@ -9,10 +9,8 @@
 
   For more on dweet.io, see https://dweet.io/play/
 
-
-
   created 15 Feb 2016
-  updated 16 Feb 2016
+  updated 22 Jan 2019
   by Tom Igoe
 
   this example is in the public domain
@@ -33,8 +31,6 @@ String dweetName = "scandalous-cheese-hoarder"; // use your own thing name here
 WiFiClient wifi;
 HttpClient client = HttpClient(wifi, serverAddress, port);
 int status = WL_IDLE_STATUS;
-int statusCode = 0;
-String response;
 
 void setup() {
   Serial.begin(9600);
@@ -66,8 +62,8 @@ void loop() {
   client.get(path);
 
   // read the status code and body of the response
-  statusCode = client.responseStatusCode();
-  response = client.responseBody();
+  int statusCode = client.responseStatusCode();
+  String response = client.responseBody();
   Serial.print("Status code: ");
   Serial.println(statusCode);
   Serial.print("Response: ");

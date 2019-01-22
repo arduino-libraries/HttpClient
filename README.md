@@ -7,6 +7,7 @@ Derived from [Adrian McEwen's HttpClient library](https://github.com/amcewen/Htt
 ## Dependencies
 
 - Requires a networking hardware and a library that provides transport specific `Client` instance, such as:
+  - [WiFiNINA](https://github.com/arduino-libraries/WiFiNINA)
   - [WiFi101](https://github.com/arduino-libraries/WiFi101)
   - [Ethernet](https://github.com/arduino-libraries/Ethernet)
   - [WiFi](https://github.com/arduino-libraries/WiFi)

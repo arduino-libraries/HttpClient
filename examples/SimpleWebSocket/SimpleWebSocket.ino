@@ -3,9 +3,10 @@
   Connects to the WebSocket server, and sends a hello
   message every 5 seconds
 
-
   created 28 Jun 2016
   by Sandeep Mistry
+  modified 22 Jan 2019
+  by Tom Igoe
 
   this example is in the public domain
 */
@@ -77,4 +78,3 @@ void loop() {
 
   Serial.println("disconnected");
 }
-
