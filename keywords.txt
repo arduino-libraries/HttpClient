@@ -9,6 +9,7 @@
 ArduinoHttpClient	KEYWORD1
 HttpClient	KEYWORD1
 WebSocketClient	KEYWORD1
+URLEncoder	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
@@ -46,6 +47,8 @@ messageType	KEYWORD2
 isFinal	KEYWORD2
 readString	KEYWORD2
 ping	KEYWORD2
+
+encode	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
