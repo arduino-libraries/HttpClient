@@ -13,11 +13,11 @@ public:
     URLEncoderClass();
     virtual ~URLEncoderClass();
 
-    String encode(const char* str);
-    String encode(const String& str);
+    static String encode(const char* str);
+    static String encode(const String& str);
 
 private:
-    String encode(const char* str, int length);
+    static String encode(const char* str, int length);
 };
 
 extern URLEncoderClass URLEncoder;
