@@ -312,6 +312,19 @@ public:
     // Inherited from Client
     virtual int connect(IPAddress ip, uint16_t port) { return iClient->connect(ip, port); };
     virtual int connect(const char *host, uint16_t port) { return iClient->connect(host, port); };
+    
+    #ifdef ESP32 || ESP8266
+    virtual int connect(IPAddress ip, uint16_t port, int timeout)
+    {
+        throw "Method [virtual int connect(IPAddress ip, uint16_t port, int timeout)] is not implemented in HttpClient.h";
+    }
+
+    virtual int connect(const char *host, uint16_t port, int timeout)
+    {
+        throw "Method [virtual int connect(const char *host, uint16_t port, int timeout)] is not implemented in HttpClient.h";
+    }
+    #endif
+    
     virtual void stop();
     virtual uint8_t connected() { return iClient->connected(); };
     virtual operator bool() { return bool(iClient); };
