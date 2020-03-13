@@ -181,14 +181,17 @@ int HttpClient::sendInitialHeaders(const char* aURLPath, const char* aHttpMethod
 
 void HttpClient::sendHostHeader() 
 {
-    if(iServerName || iUseServerAddressForHostHeader) {
+    if(iServerName || iUseServerAddressForHostHeader) 
+    {
         iClient->print(HTTP_HEADER_HOST);
         iClient->print(": ");
 
         if (iServerName)
         {
             iClient->print(iServerName);
-        } else if(iUseServerAddressForHostHeader) {
+        } 
+        else if(iUseServerAddressForHostHeader) 
+        {
             iClient->print(iServerAddress);
         }
 
