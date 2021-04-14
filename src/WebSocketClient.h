@@ -28,6 +28,8 @@ public:
      */
     int begin(const char* aPath = "/");
     int begin(const String& aPath);
+    int begin(const char* username, const char* password);
+    int begin(const String& aPath, const char* username, const char* password);
 
     /** Begin to send a message of type (TYPE_TEXT or TYPE_BINARY)
         Use the write or Stream API's to set message content, followed by endMessage
@@ -84,6 +86,9 @@ private:
     void flushRx();
 
 private:
+	bool hasAuth = false;
+	const char* _username;
+	const char* _password;
     bool iTxStarted;
     uint8_t iTxMessageType;
     uint8_t iTxBuffer[128];
