@@ -542,7 +542,7 @@ bool HttpClient::endOfHeadersReached()
     return (iState == eReadingBody || iState == eReadingChunkLength || iState == eReadingBodyChunk);
 };
 
-int HttpClient::contentLength()
+long HttpClient::contentLength()
 {
     // skip the response headers, if they haven't been read already 
     if (!endOfHeadersReached())
