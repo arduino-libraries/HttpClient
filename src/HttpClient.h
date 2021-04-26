@@ -272,7 +272,7 @@ public:
       @return Length of the body, in bytes, or kNoContentLengthHeader if no
       Content-Length header was returned by the server
     */
-    int contentLength();
+    long contentLength();
 
     /** Returns if the response body is chunked
       @return true if response body is chunked, false otherwise
@@ -372,7 +372,7 @@ protected:
     // Stores the status code for the response, once known
     int iStatusCode;
     // Stores the value of the Content-Length header, if present
-    int iContentLength;
+    long iContentLength;
     // How many bytes of the response body have been read by the user
     int iBodyLengthConsumed;
     // How far through a Content-Length header prefix we are
