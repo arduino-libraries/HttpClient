@@ -25,7 +25,7 @@ public:
     /** Start the Web Socket connection to the specified path with headers
       @param aPath     Path to use in request
       @param additionalHeaders  2D array with headers
-      @param headerRows  amound of rows in additionalHeaders array
+      @param headerRows  amount of rows in additionalHeaders array
       @return 0 if successful, else error
      */
     int begin(const char* aPath, char* (*additionalHeaders)[2], size_t headerRows);
